@@ -30,7 +30,7 @@ export function ScreensGrid({ limit }: { limit?: number }) {
   if (!screens.length)
     return (
       <StatePanel
-        title="No screens connected yet"
+        title="No screens paired yet"
         description="Pair your first Google TV to start controlling content from this dashboard."
         action={
           <Link

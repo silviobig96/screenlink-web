@@ -15,5 +15,5 @@ export interface Screen {
   deviceModel: string;
   platform: string;
   status: ScreenStatus;
-  lastSeenAt: string;
+  lastSeenAt: string | null;
 }

@@ -10,7 +10,13 @@ export function useConfirmPairing() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (code: string) => pairingService.confirm(client, { code }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: screenKeys.all }),
+    onSuccess: async ({ screenId }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: screenKeys.all }),
+        queryClient.invalidateQueries({
+          queryKey: screenKeys.detail(screenId),
+        }),
+      ]);
+    },
   });
 }

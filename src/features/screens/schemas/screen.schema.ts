@@ -8,7 +8,23 @@ export const screenSchema = z.looseObject({
   deviceModel: z.string().catch("Unknown model"),
   platform: z.string().catch("Google TV"),
   status: z.enum(screenStatuses).catch("offline"),
-  lastSeenAt: z.iso.datetime().or(z.string()).catch(new Date(0).toISOString()),
+  lastSeenAt: z.iso
+    .datetime()
+    .or(z.string())
+    .nullable()
+    .optional()
+    .catch(null)
+    .transform((value) => value ?? null),
 });
 
-export const screensResponseSchema = z.array(screenSchema);
+export const screensResponseSchema = z
+  .union([
+    z.array(screenSchema),
+    z.object({ screens: z.array(screenSchema) }),
+    z.object({ items: z.array(screenSchema) }),
+  ])
+  .transform((value) => {
+    if (Array.isArray(value)) return value;
+    if ("screens" in value) return value.screens;
+    return value.items;
+  });

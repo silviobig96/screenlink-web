@@ -83,7 +83,7 @@ export function DashboardOverview() {
           <div>
             <h2 className="text-xl font-semibold text-white">Recent screens</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Your latest connected displays.
+              Your latest paired displays.
             </p>
           </div>
           <Link
@@ -101,7 +101,7 @@ export function DashboardOverview() {
           </div>
         ) : (
           <StatePanel
-            title="Connect your first screen"
+            title="Pair your first screen"
             description="Pair a Google TV to bring your ScreenLink dashboard to life."
             action={
               <Link

@@ -1,4 +1,5 @@
-export function formatLastSeen(value: string) {
+export function formatLastSeen(value?: string | null) {
+  if (!value) return "No heartbeat yet";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Unknown";
   const seconds = Math.round((date.getTime() - Date.now()) / 1000);
