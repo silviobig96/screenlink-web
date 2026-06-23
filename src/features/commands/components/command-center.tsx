@@ -2,11 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eraser, Image, LoaderCircle, Radio, Send, Video } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useMediaLibrary } from "@/features/media/hooks/use-media";
+import { formatBytes } from "@/features/media/utils/format-bytes";
 import { getErrorMessage } from "@/lib/api/api-error";
 import {
   mediaUrlSchema,
@@ -15,7 +18,9 @@ import {
 import {
   buildClearScreenCommand,
   buildDisplayImageCommand,
+  buildDisplayImageMediaCommand,
   buildDisplayVideoCommand,
+  buildDisplayVideoMediaCommand,
   buildPingCommand,
 } from "../services/command-builders";
 import { useSendCommand } from "../hooks/use-send-command";
@@ -65,6 +70,8 @@ function MediaCommandForm({
   type: "image" | "video";
 }) {
   const mutation = useSendCommand(screenId);
+  const mediaQuery = useMediaLibrary();
+  const [selectedMediaAssetId, setSelectedMediaAssetId] = useState("");
   const {
     register,
     handleSubmit,
@@ -75,6 +82,13 @@ function MediaCommandForm({
     defaultValues: { url: "" },
   });
   const Icon = type === "image" ? Image : Video;
+  const libraryItems = useMemo(
+    () =>
+      (mediaQuery.data ?? []).filter(
+        (asset) => asset.type === type && asset.status === "ready",
+      ),
+    [mediaQuery.data, type],
+  );
   const submit = ({ url }: MediaUrlFormValues) =>
     mutation.mutate(
       type === "image"
@@ -88,6 +102,22 @@ function MediaCommandForm({
         onError: (error) => toast.error(getErrorMessage(error)),
       },
     );
+  const sendSelectedMedia = () => {
+    if (!selectedMediaAssetId) {
+      toast.error(`Choose a ${type} from the library first.`);
+      return;
+    }
+    mutation.mutate(
+      type === "image"
+        ? buildDisplayImageMediaCommand(selectedMediaAssetId)
+        : buildDisplayVideoMediaCommand(selectedMediaAssetId),
+      {
+        onSuccess: () =>
+          toast.success(`${type === "image" ? "Image" : "Video"} command sent`),
+        onError: (error) => toast.error(getErrorMessage(error)),
+      },
+    );
+  };
   return (
     <Card className="p-5">
       <div className="flex items-center gap-3">
@@ -131,6 +161,69 @@ function MediaCommandForm({
           Send {type}
         </Button>
       </form>
+      <div className="mt-5 border-t border-white/[.08] pt-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-semibold text-white">
+              Choose from library
+            </h4>
+            <p className="text-xs text-slate-500">
+              Send uploaded {type} media without pasting a URL.
+            </p>
+          </div>
+          {mediaQuery.isFetching && (
+            <LoaderCircle
+              aria-label="Loading media"
+              className="size-4 animate-spin text-slate-500"
+            />
+          )}
+        </div>
+        <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+          <label className="sr-only" htmlFor={`${type}-media-asset`}>
+            {type} from library
+          </label>
+          <select
+            id={`${type}-media-asset`}
+            value={selectedMediaAssetId}
+            onChange={(event) => setSelectedMediaAssetId(event.target.value)}
+            className="h-11 w-full rounded-xl border border-white/[.08] bg-slate-950 px-3 text-sm text-white transition outline-none focus:border-cyan-300/40 focus:ring-2 focus:ring-cyan-300/20 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={libraryItems.length === 0 || mutation.isPending}
+          >
+            <option value="">
+              {libraryItems.length === 0
+                ? `No uploaded ${type}s ready`
+                : `Select a ${type}`}
+            </option>
+            {libraryItems.map((asset) => (
+              <option key={asset.id} value={asset.id}>
+                {asset.filename} · {formatBytes(asset.sizeBytes)}
+              </option>
+            ))}
+          </select>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={
+              mutation.isPending ||
+              libraryItems.length === 0 ||
+              !selectedMediaAssetId
+            }
+            onClick={sendSelectedMedia}
+          >
+            {mutation.isPending ? (
+              <LoaderCircle aria-hidden className="size-4 animate-spin" />
+            ) : (
+              <Send aria-hidden className="size-4" />
+            )}{" "}
+            Send selected
+          </Button>
+        </div>
+        {mediaQuery.isError && (
+          <p role="alert" className="mt-3 text-xs text-rose-300">
+            Media library could not be loaded.
+          </p>
+        )}
+      </div>
     </Card>
   );
 }

@@ -1,6 +1,5 @@
-import { Library } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
-import { ComingSoon } from "@/components/feedback/coming-soon";
+import { MediaLibrary } from "@/features/media/components/media-library";
 
 export const metadata = { title: "Media" };
 export default function MediaPage() {
@@ -9,13 +8,9 @@ export default function MediaPage() {
       <PageHeader
         eyebrow="Content library"
         title="Media"
-        description="Your reusable images and videos will live here."
+        description="Upload TV-ready images and videos, manage your library, and reuse assets across screens."
       />
-      <ComingSoon
-        icon={Library}
-        title="A media library built for every screen"
-        description="Upload management is coming in a future release. Today, you can send public image and video URLs directly from any screen control center."
-      />
+      <MediaLibrary />
     </div>
   );
 }

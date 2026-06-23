@@ -15,3 +15,13 @@ export function buildDisplayImageCommand(url: string): CommandRequest {
 export function buildDisplayVideoCommand(url: string): CommandRequest {
   return { type: "DISPLAY_VIDEO", payload: mediaUrlSchema.parse({ url }) };
 }
+export function buildDisplayImageMediaCommand(
+  mediaAssetId: string,
+): CommandRequest {
+  return { type: "DISPLAY_IMAGE", payload: { mediaAssetId } };
+}
+export function buildDisplayVideoMediaCommand(
+  mediaAssetId: string,
+): CommandRequest {
+  return { type: "DISPLAY_VIDEO", payload: { mediaAssetId } };
+}

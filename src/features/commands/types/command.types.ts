@@ -7,7 +7,7 @@ export const commandTypes = [
 export type CommandType = (typeof commandTypes)[number];
 export interface CommandRequest {
   type: CommandType;
-  payload: Record<string, never> | { url: string };
+  payload: Record<string, never> | { mediaAssetId: string } | { url: string };
 }
 export interface CommandResponse {
   id?: string;
